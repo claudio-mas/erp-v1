@@ -1,0 +1,314 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Meu ERP{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">
+        <i class="fas fa-tachometer-alt me-2"></i>Dashboard Principal
+    </h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item active">Dashboard</li>
+        </ol>
+    </nav>
+</div>
+
+<!-- Cards de Estatísticas -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <div class="stats-number">
+                <i class="fas fa-users me-2"></i>
+                {{ total_clientes|default:0 }}
+            </div>
+            <div class="stats-label">Clientes Ativos</div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+            <div class="stats-number">
+                <i class="fas fa-shopping-cart me-2"></i>
+                {{ vendas_mes|default:0 }}
+            </div>
+            <div class="stats-label">Vendas do Mês</div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+            <div class="stats-number">
+                <i class="fas fa-box me-2"></i>
+                {{ produtos_estoque|default:0 }}
+            </div>
+            <div class="stats-label">Produtos em Estoque</div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+            <div class="stats-number">
+                <i class="fas fa-dollar-sign me-2"></i>
+                R$ {{ faturamento_mes|default:0|floatformat:2 }}
+            </div>
+            <div class="stats-label">Faturamento do Mês</div>
+        </div>
+    </div>
+</div>
+
+<!-- Gráficos e Informações -->
+<div class="row">
+    <!-- Vendas por Mês -->
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-chart-line me-2 text-primary"></i>
+                    Vendas dos Últimos 6 Meses
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="vendasChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Produtos Mais Vendidos -->
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-trophy me-2 text-warning"></i>
+                    Top 5 Produtos
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                        <div>
+                            <strong>Produto A</strong>
+                            <br><small class="text-muted">Categoria X</small>
+                        </div>
+                        <span class="badge bg-primary rounded-pill">150</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                        <div>
+                            <strong>Produto B</strong>
+                            <br><small class="text-muted">Categoria Y</small>
+                        </div>
+                        <span class="badge bg-primary rounded-pill">120</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                        <div>
+                            <strong>Produto C</strong>
+                            <br><small class="text-muted">Categoria Z</small>
+                        </div>
+                        <span class="badge bg-primary rounded-pill">98</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                        <div>
+                            <strong>Produto D</strong>
+                            <br><small class="text-muted">Categoria W</small>
+                        </div>
+                        <span class="badge bg-primary rounded-pill">87</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                        <div>
+                            <strong>Produto E</strong>
+                            <br><small class="text-muted">Categoria V</small>
+                        </div>
+                        <span class="badge bg-primary rounded-pill">76</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Alertas e Notificações -->
+<div class="row">
+    <!-- Contas a Vencer -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-exclamation-triangle me-2 text-warning"></i>
+                    Contas a Vencer (Próximos 7 dias)
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Cliente/Fornecedor</th>
+                                <th>Vencimento</th>
+                                <th>Valor</th>
+                                <th>Tipo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Cliente ABC Ltda</td>
+                                <td>25/12/2024</td>
+                                <td>R$ 1.500,00</td>
+                                <td><span class="badge bg-success">Receber</span></td>
+                            </tr>
+                            <tr>
+                                <td>Fornecedor XYZ</td>
+                                <td>26/12/2024</td>
+                                <td>R$ 2.300,00</td>
+                                <td><span class="badge bg-danger">Pagar</span></td>
+                            </tr>
+                            <tr>
+                                <td>Cliente DEF S.A.</td>
+                                <td>28/12/2024</td>
+                                <td>R$ 850,00</td>
+                                <td><span class="badge bg-success">Receber</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Estoque Baixo -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-box-open me-2 text-danger"></i>
+                    Produtos com Estoque Baixo
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Produto</th>
+                                <th>Estoque Atual</th>
+                                <th>Estoque Mínimo</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Produto Alpha</td>
+                                <td>5</td>
+                                <td>10</td>
+                                <td><span class="badge bg-warning">Baixo</span></td>
+                            </tr>
+                            <tr>
+                                <td>Produto Beta</td>
+                                <td>2</td>
+                                <td>15</td>
+                                <td><span class="badge bg-danger">Crítico</span></td>
+                            </tr>
+                            <tr>
+                                <td>Produto Gamma</td>
+                                <td>8</td>
+                                <td>12</td>
+                                <td><span class="badge bg-warning">Baixo</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ações Rápidas -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-bolt me-2 text-primary"></i>
+                    Ações Rápidas
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <a href="{% url 'cadastros:cliente_create' %}" class="btn btn-outline-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center" style="min-height: 100px;">
+                            <i class="fas fa-user-plus fa-2x mb-2"></i>
+                            <span>Novo Cliente</span>
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <a href="{% url 'vendas:pedido_create' %}" class="btn btn-outline-success w-100 h-100 d-flex flex-column align-items-center justify-content-center" style="min-height: 100px;">
+                            <i class="fas fa-shopping-cart fa-2x mb-2"></i>
+                            <span>Nova Venda</span>
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <a href="{% url 'cadastros:produto_create' %}" class="btn btn-outline-info w-100 h-100 d-flex flex-column align-items-center justify-content-center" style="min-height: 100px;">
+                            <i class="fas fa-box fa-2x mb-2"></i>
+                            <span>Novo Produto</span>
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <a href="{% url 'financeiro:contas_receber_create' %}" class="btn btn-outline-warning w-100 h-100 d-flex flex-column align-items-center justify-content-center" style="min-height: 100px;">
+                            <i class="fas fa-money-bill-wave fa-2x mb-2"></i>
+                            <span>Nova Conta</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Gráfico de Vendas
+    const ctx = document.getElementById('vendasChart').getContext('2d');
+    const vendasChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+            datasets: [{
+                label: 'Vendas (R$)',
+                data: [12000, 19000, 15000, 25000, 22000, 30000],
+                borderColor: '#3498db',
+                backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return 'R$ ' + value.toLocaleString();
+                        }
+                    }
+                }
+            },
+            elements: {
+                point: {
+                    radius: 6,
+                    hoverRadius: 8
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
+

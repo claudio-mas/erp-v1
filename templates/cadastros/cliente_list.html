@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+
+{% block title %}Clientes - Meu ERP{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="page-title">
+                <i class="fas fa-users me-2"></i>Clientes
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard_principal' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'cadastros:dashboard' %}">Cadastros</a></li>
+                    <li class="breadcrumb-item active">Clientes</li>
+                </ol>
+            </nav>
+        </div>
+        <div>
+            <a href="{% url 'cadastros:cliente_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Novo Cliente
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label for="search" class="form-label">Buscar</label>
+                <input type="text" class="form-control" id="search" name="search" 
+                       placeholder="Nome, código ou CPF/CNPJ" value="{{ request.GET.search }}">
+            </div>
+            <div class="col-md-3">
+                <label for="tipo_pessoa" class="form-label">Tipo de Pessoa</label>
+                <select class="form-select" id="tipo_pessoa" name="tipo_pessoa">
+                    <option value="">Todos</option>
+                    <option value="1" {% if request.GET.tipo_pessoa == '1' %}selected{% endif %}>Física</option>
+                    <option value="2" {% if request.GET.tipo_pessoa == '2' %}selected{% endif %}>Jurídica</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="ativo" class="form-label">Status</label>
+                <select class="form-select" id="ativo" name="ativo">
+                    <option value="">Todos</option>
+                    <option value="true" {% if request.GET.ativo == 'true' %}selected{% endif %}>Ativo</option>
+                    <option value="false" {% if request.GET.ativo == 'false' %}selected{% endif %}>Inativo</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-outline-primary me-2">
+                    <i class="fas fa-search me-1"></i>Filtrar
+                </button>
+                <a href="{% url 'cadastros:cliente_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-1"></i>Limpar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tabela de Clientes -->
+<div class="card">
+    <div class="card-header bg-white">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-list me-2"></i>Lista de Clientes
+            </h5>
+            <div class="d-flex align-items-center">
+                <span class="text-muted me-3">
+                    {{ clientes|length }} de {{ paginator.count }} registros
+                </span>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-download me-1"></i>Exportar
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-print me-1"></i>Imprimir
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        {% if clientes %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Nome/Razão Social</th>
+                        <th>CPF/CNPJ</th>
+                        <th>Cidade</th>
+                        <th>Telefone</th>
+                        <th>Status</th>
+                        <th width="120">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cliente in clientes %}
+                    <tr>
+                        <td>
+                            <strong class="text-primary">{{ cliente.codigo }}</strong>
+                        </td>
+                        <td>
+                            <div>
+                                <strong>{{ cliente.nome_razao_social }}</strong>
+                                {% if cliente.nome_fantasia %}
+                                <br><small class="text-muted">{{ cliente.nome_fantasia }}</small>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="font-monospace">{{ cliente.cpf_cnpj }}</span>
+                        </td>
+                        <td>
+                            {{ cliente.cidade.nome }} - {{ cliente.cidade.estado.sigla }}
+                        </td>
+                        <td>
+                            {% if cliente.celular %}
+                                <i class="fas fa-mobile-alt me-1"></i>{{ cliente.celular }}
+                            {% elif cliente.telefone %}
+                                <i class="fas fa-phone me-1"></i>{{ cliente.telefone }}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if cliente.ativo %}
+                                <span class="badge bg-success">Ativo</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Inativo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{% url 'cadastros:cliente_detail' cliente.pk %}" 
+                                   class="btn btn-outline-info btn-sm" title="Visualizar">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'cadastros:cliente_update' cliente.pk %}" 
+                                   class="btn btn-outline-primary btn-sm" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button type="button" class="btn btn-outline-danger btn-sm" 
+                                        title="Excluir" onclick="confirmarExclusao({{ cliente.pk }}, '{{ cliente.nome_razao_social }}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">Nenhum cliente encontrado</h5>
+            <p class="text-muted">Comece cadastrando seu primeiro cliente.</p>
+            <a href="{% url 'cadastros:cliente_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Cadastrar Cliente
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    
+    {% if is_paginated %}
+    <div class="card-footer bg-white">
+        <nav aria-label="Navegação de páginas">
+            <ul class="pagination justify-content-center mb-0">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    </li>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal de Confirmação de Exclusão -->
+<div class="modal fade" id="modalExclusao" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                    Confirmar Exclusão
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir o cliente <strong id="nomeCliente"></strong>?</p>
+                <p class="text-muted">Esta ação não pode ser desfeita.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="formExclusao" method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>Excluir
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function confirmarExclusao(clienteId, nomeCliente) {
+        document.getElementById('nomeCliente').textContent = nomeCliente;
+        document.getElementById('formExclusao').action = '/cadastros/clientes/' + clienteId + '/excluir/';
+        
+        const modal = new bootstrap.Modal(document.getElementById('modalExclusao'));
+        modal.show();
+    }
+
+    // Auto-submit do formulário de filtro ao alterar os selects
+    document.querySelectorAll('#tipo_pessoa, #ativo').forEach(function(select) {
+        select.addEventListener('change', function() {
+            this.form.submit();
+        });
+    });
+
+    // Highlight da linha ao passar o mouse
+    document.querySelectorAll('tbody tr').forEach(function(row) {
+        row.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = 'rgba(52, 152, 219, 0.05)';
+        });
+        
+        row.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = '';
+        });
+    });
+</script>
+{% endblock %}
+
