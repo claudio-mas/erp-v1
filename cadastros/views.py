@@ -47,6 +47,10 @@ class ClienteListView(LoginRequiredMixin, ListView):
             )
         return queryset.order_by('nome_razao_social')
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = ClienteForm()
+        return context
 
 class ClienteDetailView(LoginRequiredMixin, DetailView):
     model = Cliente

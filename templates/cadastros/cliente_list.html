@@ -242,33 +242,59 @@
         </div>
     </div>
 </div>
+
+
 {% endblock %}
 
 {% block extra_js %}
 <script>
     function confirmarExclusao(clienteId, nomeCliente) {
-        document.getElementById('nomeCliente').textContent = nomeCliente;
-        document.getElementById('formExclusao').action = '/cadastros/clientes/' + clienteId + '/excluir/';
+        // Aguarda o DOM estar pronto
+        document.addEventListener('DOMContentLoaded', function() {
+            const nomeElement = document.getElementById('nomeCliente');
+            const formElement = document.getElementById('formExclusao');
+            const modalElement = document.getElementById('modalExclusao');
+            
+            if (nomeElement && formElement && modalElement) {
+                nomeElement.textContent = nomeCliente;
+                formElement.action = '/cadastros/clientes/' + clienteId + '/excluir/';
+                
+                const modal = new bootstrap.Modal(modalElement);
+                modal.show();
+            }
+        });
         
-        const modal = new bootstrap.Modal(document.getElementById('modalExclusao'));
-        modal.show();
+        // Execução imediata se o DOM já estiver pronto
+        const nomeElement = document.getElementById('nomeCliente');
+        const formElement = document.getElementById('formExclusao');
+        const modalElement = document.getElementById('modalExclusao');
+        
+        if (nomeElement && formElement && modalElement) {
+            nomeElement.textContent = nomeCliente;
+            formElement.action = '/cadastros/clientes/' + clienteId + '/excluir/';
+            
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+        }
     }
 
-    // Auto-submit do formulário de filtro ao alterar os selects
-    document.querySelectorAll('#tipo_pessoa, #ativo').forEach(function(select) {
-        select.addEventListener('change', function() {
-            this.form.submit();
+    // Aguarda o DOM estar pronto para os outros eventos
+    document.addEventListener('DOMContentLoaded', function() {
+        // Filtros automáticos
+        document.querySelectorAll('#tipo_pessoa, #ativo').forEach(function(select) {
+            select.addEventListener('change', function() {
+                this.form.submit();
+            });
         });
-    });
 
-    // Highlight da linha ao passar o mouse
-    document.querySelectorAll('tbody tr').forEach(function(row) {
-        row.addEventListener('mouseenter', function() {
-            this.style.backgroundColor = 'rgba(52, 152, 219, 0.05)';
-        });
-        
-        row.addEventListener('mouseleave', function() {
-            this.style.backgroundColor = '';
+        // Hover nas linhas da tabela
+        document.querySelectorAll('tbody tr').forEach(function(row) {
+            row.addEventListener('mouseenter', function() {
+                this.style.backgroundColor = 'rgba(52, 152, 219, 0.05)';
+            });
+            row.addEventListener('mouseleave', function() {
+                this.style.backgroundColor = '';
+            });
         });
     });
 </script>

@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if form.instance.pk %}Editar Cliente{% else %}Novo Cliente{% endif %} - Meu ERP{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="page-title">
+                <i class="fas fa-user me-2"></i>
+                {% if form.instance.pk %}Editar Cliente{% else %}Novo Cliente{% endif %}
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard_principal' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'cadastros:cliente_list' %}">Clientes</a></li>
+                    <li class="breadcrumb-item active">{% if form.instance.pk %}Editar{% else %}Novo{% endif %}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-white">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-edit me-2"></i>Dados do Cliente
+        </h5>
+    </div>
+    <div class="card-body">
+        <form method="post" id="clienteForm">
+            {% csrf_token %}
+            
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label for="{{ form.codigo.id_for_label }}" class="form-label">{{ form.codigo.label }}</label>
+                        {{ form.codigo }}
+                        {% if form.codigo.errors %}
+                            <div class="text-danger small">{{ form.codigo.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="{{ form.nome_razao_social.id_for_label }}" class="form-label">{{ form.nome_razao_social.label }} *</label>
+                        {{ form.nome_razao_social }}
+                        {% if form.nome_razao_social.errors %}
+                            <div class="text-danger small">{{ form.nome_razao_social.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label for="{{ form.tipo_pessoa.id_for_label }}" class="form-label">{{ form.tipo_pessoa.label }} *</label>
+                        {{ form.tipo_pessoa }}
+                        {% if form.tipo_pessoa.errors %}
+                            <div class="text-danger small">{{ form.tipo_pessoa.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="{{ form.nome_fantasia.id_for_label }}" class="form-label">{{ form.nome_fantasia.label }}</label>
+                        {{ form.nome_fantasia }}
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label for="{{ form.cpf_cnpj.id_for_label }}" class="form-label">{{ form.cpf_cnpj.label }} *</label>
+                        {{ form.cpf_cnpj }}
+                        {% if form.cpf_cnpj.errors %}
+                            <div class="text-danger small">{{ form.cpf_cnpj.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label for="{{ form.rg_ie.id_for_label }}" class="form-label">{{ form.rg_ie.label }}</label>
+                        {{ form.rg_ie }}
+                    </div>
+                </div>
+            </div>
+
+            <h6 class="mt-4 mb-3"><i class="fas fa-map-marker-alt me-2"></i>Endereço</h6>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="{{ form.endereco.id_for_label }}" class="form-label">{{ form.endereco.label }} *</label>
+                        {{ form.endereco }}
+                        {% if form.endereco.errors %}
+                            <div class="text-danger small">{{ form.endereco.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="mb-3">
+                        <label for="{{ form.numero.id_for_label }}" class="form-label">{{ form.numero.label }} *</label>
+                        {{ form.numero }}
+                        {% if form.numero.errors %}
+                            <div class="text-danger small">{{ form.numero.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="{{ form.complemento.id_for_label }}" class="form-label">{{ form.complemento.label }}</label>
+                        {{ form.complemento }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="{{ form.bairro.id_for_label }}" class="form-label">{{ form.bairro.label }} *</label>
+                        {{ form.bairro }}
+                        {% if form.bairro.errors %}
+                            <div class="text-danger small">{{ form.bairro.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label for="{{ form.cep.id_for_label }}" class="form-label">{{ form.cep.label }} *</label>
+                        {{ form.cep }}
+                        {% if form.cep.errors %}
+                            <div class="text-danger small">{{ form.cep.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <div class="mb-3">
+                        <label for="{{ form.cidade.id_for_label }}" class="form-label">{{ form.cidade.label }} *</label>
+                        {{ form.cidade }}
+                        {% if form.cidade.errors %}
+                            <div class="text-danger small">{{ form.cidade.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <h6 class="mt-4 mb-3"><i class="fas fa-phone me-2"></i>Contato</h6>
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label for="{{ form.telefone.id_for_label }}" class="form-label">{{ form.telefone.label }}</label>
+                        {{ form.telefone }}
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label for="{{ form.celular.id_for_label }}" class="form-label">{{ form.celular.label }}</label>
+                        {{ form.celular }}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="{{ form.email.id_for_label }}" class="form-label">{{ form.email.label }}</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <div class="text-danger small">{{ form.email.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="mb-3">
+                        <label for="{{ form.site.id_for_label }}" class="form-label">{{ form.site.label }}</label>
+                        {{ form.site }}
+                    </div>
+                </div>
+            </div>
+
+            <h6 class="mt-4 mb-3"><i class="fas fa-handshake me-2"></i>Informações Comerciais</h6>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="{{ form.segmento_mercado.id_for_label }}" class="form-label">{{ form.segmento_mercado.label }} *</label>
+                        {{ form.segmento_mercado }}
+                        {% if form.segmento_mercado.errors %}
+                            <div class="text-danger small">{{ form.segmento_mercado.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="{{ form.forma_pagamento_padrao.id_for_label }}" class="form-label">{{ form.forma_pagamento_padrao.label }} *</label>
+                        {{ form.forma_pagamento_padrao }}
+                        {% if form.forma_pagamento_padrao.errors %}
+                            <div class="text-danger small">{{ form.forma_pagamento_padrao.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="{{ form.limite_credito.id_for_label }}" class="form-label">{{ form.limite_credito.label }}</label>
+                        {{ form.limite_credito }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="mb-3">
+                        <label for="{{ form.observacoes.id_for_label }}" class="form-label">{{ form.observacoes.label }}</label>
+                        {{ form.observacoes }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2">
+                <a href="{% url 'cadastros:cliente_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-times me-2"></i>Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i>Salvar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
