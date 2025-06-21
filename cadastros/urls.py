@@ -13,6 +13,8 @@ urlpatterns = [
     path('clientes/<int:pk>/', views.ClienteDetailView.as_view(), name='cliente_detail'),
     path('clientes/<int:pk>/editar/', views.ClienteUpdateView.as_view(), name='cliente_update'),
     path('clientes/<int:pk>/excluir/', views.ClienteDeleteView.as_view(), name='cliente_delete'),
+    path('clientes/exportar/', views.exportar_clientes_csv, name='cliente_exportar'),
+    path('clientes/imprimir/', views.imprimir_clientes_pdf, name='cliente_imprimir'),
     
     # Fornecedor URLs
     path('fornecedores/', views.FornecedorListView.as_view(), name='fornecedor_list'),

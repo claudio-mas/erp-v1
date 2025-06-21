@@ -5,7 +5,15 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.db.models import Q
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
+import csv
+import io
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter, A4
+from reportlab.lib import colors
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
+from reportlab.lib.styles import getSampleStyleSheet
 from .models import (
     Cliente, Fornecedor, Produto, Vendedor, Estado, Cidade, TipoPessoa,
     SegmentoMercado, FormaPagamento, UnidadeMedida, CategoriaProduto
@@ -37,7 +45,18 @@ class ClienteListView(LoginRequiredMixin, ListView):
     paginate_by = 20
     
     def get_queryset(self):
-        queryset = Cliente.objects.filter(ativo=True)
+        queryset = Cliente.objects.select_related('cidade__estado', 'tipo_pessoa')
+        
+        # Filtro de status ativo/inativo
+        ativo = self.request.GET.get('ativo')
+        if ativo == 'true':
+            queryset = queryset.filter(ativo=True)
+        elif ativo == 'false':
+            queryset = queryset.filter(ativo=False)
+        else:
+            queryset = queryset.filter(ativo=True)  # Padrão: apenas ativos
+        
+        # Filtro de busca
         search = self.request.GET.get('search')
         if search:
             queryset = queryset.filter(
@@ -45,11 +64,17 @@ class ClienteListView(LoginRequiredMixin, ListView):
                 Q(cpf_cnpj__icontains=search) |
                 Q(codigo__icontains=search)
             )
+        
+        # Filtro por tipo de pessoa
+        tipo_pessoa = self.request.GET.get('tipo_pessoa')
+        if tipo_pessoa:
+            queryset = queryset.filter(tipo_pessoa_id=tipo_pessoa)
+        
         return queryset.order_by('nome_razao_social')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['form'] = ClienteForm()
+        context['tipos_pessoa'] = TipoPessoa.objects.filter(ativo=True)
         return context
 
 class ClienteDetailView(LoginRequiredMixin, DetailView):
@@ -414,4 +439,130 @@ def buscar_fornecedores(request):
         })
     
     return JsonResponse(results, safe=False)
+
+
+@login_required
+def exportar_clientes_csv(request):
+    """Exporta lista de clientes para CSV"""
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="clientes.csv"'
+    response.write('\ufeff')  # BOM para UTF-8
+    
+    writer = csv.writer(response)
+    writer.writerow([
+        'Código', 'Nome/Razão Social', 'Nome Fantasia', 'CPF/CNPJ', 
+        'Telefone', 'Celular', 'Email', 'Cidade', 'Estado', 'Status'
+    ])
+    
+    # Aplicar os mesmos filtros da listagem
+    queryset = Cliente.objects.select_related('cidade__estado')
+    
+    ativo = request.GET.get('ativo')
+    if ativo == 'true':
+        queryset = queryset.filter(ativo=True)
+    elif ativo == 'false':
+        queryset = queryset.filter(ativo=False)
+    else:
+        queryset = queryset.filter(ativo=True)
+    
+    search = request.GET.get('search')
+    if search:
+        queryset = queryset.filter(
+            Q(nome_razao_social__icontains=search) |
+            Q(cpf_cnpj__icontains=search) |
+            Q(codigo__icontains=search)
+        )
+    
+    tipo_pessoa = request.GET.get('tipo_pessoa')
+    if tipo_pessoa:
+        queryset = queryset.filter(tipo_pessoa_id=tipo_pessoa)
+    
+    for cliente in queryset.order_by('nome_razao_social'):
+        writer.writerow([
+            cliente.codigo,
+            cliente.nome_razao_social,
+            cliente.nome_fantasia or '',
+            cliente.cpf_cnpj,
+            cliente.telefone or '',
+            cliente.celular or '',
+            cliente.email or '',
+            cliente.cidade.nome,
+            cliente.cidade.estado.sigla,
+            'Ativo' if cliente.ativo else 'Inativo'
+        ])
+    
+    return response
+
+
+@login_required
+def imprimir_clientes_pdf(request):
+    """Gera PDF para impressão da lista de clientes"""
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="clientes.pdf"'
+    
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    
+    # Aplicar os mesmos filtros da listagem
+    queryset = Cliente.objects.select_related('cidade__estado')
+    
+    ativo = request.GET.get('ativo')
+    if ativo == 'true':
+        queryset = queryset.filter(ativo=True)
+    elif ativo == 'false':
+        queryset = queryset.filter(ativo=False)
+    else:
+        queryset = queryset.filter(ativo=True)
+    
+    search = request.GET.get('search')
+    if search:
+        queryset = queryset.filter(
+            Q(nome_razao_social__icontains=search) |
+            Q(cpf_cnpj__icontains=search) |
+            Q(codigo__icontains=search)
+        )
+    
+    tipo_pessoa = request.GET.get('tipo_pessoa')
+    if tipo_pessoa:
+        queryset = queryset.filter(tipo_pessoa_id=tipo_pessoa)
+    
+    # Preparar dados para a tabela
+    data = [['Código', 'Nome/Razão Social', 'CPF/CNPJ', 'Cidade', 'Status']]
+    
+    for cliente in queryset.order_by('nome_razao_social'):
+        data.append([
+            cliente.codigo,
+            cliente.nome_razao_social[:30] + '...' if len(cliente.nome_razao_social) > 30 else cliente.nome_razao_social,
+            cliente.cpf_cnpj,
+            f"{cliente.cidade.nome}-{cliente.cidade.estado.sigla}",
+            'Ativo' if cliente.ativo else 'Inativo'
+        ])
+    
+    # Criar tabela
+    table = Table(data)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('FONTSIZE', (0, 1), (-1, -1), 8),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+    ]))
+    
+    # Título
+    styles = getSampleStyleSheet()
+    title = Paragraph("Lista de Clientes", styles['Title'])
+    
+    # Construir documento
+    elements = [title, table]
+    doc.build(elements)
+    
+    pdf = buffer.getvalue()
+    buffer.close()
+    response.write(pdf)
+    
+    return response
 
