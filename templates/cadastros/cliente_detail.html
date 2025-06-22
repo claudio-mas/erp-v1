@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ cliente.nome_razao_social }} - Meu ERP{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="page-title">
+                <i class="fas fa-user me-2"></i>{{ cliente.nome_razao_social }}
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard_principal' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'cadastros:cliente_list' %}">Clientes</a></li>
+                    <li class="breadcrumb-item active">{{ cliente.codigo }}</li>
+                </ol>
+            </nav>
+        </div>
+        <div>
+            <a href="{% url 'cadastros:cliente_update' cliente.pk %}" class="btn btn-primary">
+                <i class="fas fa-edit me-2"></i>Editar
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <!-- Dados Básicos -->
+        <div class="card mb-4">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Dados Básicos
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Código:</strong> {{ cliente.codigo }}</p>
+                        <p><strong>Nome/Razão Social:</strong> {{ cliente.nome_razao_social }}</p>
+                        {% if cliente.nome_fantasia %}
+                        <p><strong>Nome Fantasia:</strong> {{ cliente.nome_fantasia }}</p>
+                        {% endif %}
+                        <p><strong>Tipo de Pessoa:</strong> {{ cliente.tipo_pessoa.descricao }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>CPF/CNPJ:</strong> {{ cliente.cpf_cnpj }}</p>
+                        {% if cliente.rg_ie %}
+                        <p><strong>RG/IE:</strong> {{ cliente.rg_ie }}</p>
+                        {% endif %}
+                        <p><strong>Status:</strong> 
+                            {% if cliente.ativo %}
+                                <span class="badge bg-success">Ativo</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Inativo</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Endereço -->
+        <div class="card mb-4">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-map-marker-alt me-2"></i>Endereço
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <p><strong>Endereço:</strong> {{ cliente.endereco }}, {{ cliente.numero }}
+                        {% if cliente.complemento %} - {{ cliente.complemento }}{% endif %}</p>
+                        <p><strong>Bairro:</strong> {{ cliente.bairro }}</p>
+                        <p><strong>CEP:</strong> {{ cliente.cep }}</p>
+                        <p><strong>Cidade:</strong> {{ cliente.cidade.nome }} - {{ cliente.cidade.estado.sigla }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contato -->
+        <div class="card mb-4">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-phone me-2"></i>Contato
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        {% if cliente.telefone %}
+                        <p><strong>Telefone:</strong> {{ cliente.telefone }}</p>
+                        {% endif %}
+                        {% if cliente.celular %}
+                        <p><strong>Celular:</strong> {{ cliente.celular }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        {% if cliente.email %}
+                        <p><strong>E-mail:</strong> <a href="mailto:{{ cliente.email }}">{{ cliente.email }}</a></p>
+                        {% endif %}
+                        {% if cliente.site %}
+                        <p><strong>Site:</strong> <a href="{{ cliente.site }}" target="_blank">{{ cliente.site }}</a></p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Informações Comerciais -->
+        <div class="card mb-4">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-handshake me-2"></i>Informações Comerciais
+                </h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Segmento:</strong> {{ cliente.segmento_mercado.descricao }}</p>
+                <p><strong>Forma de Pagamento:</strong> {{ cliente.forma_pagamento_padrao.descricao }}</p>
+                <p><strong>Limite de Crédito:</strong> R$ {{ cliente.limite_credito|floatformat:2 }}</p>
+            </div>
+        </div>
+
+        <!-- Informações do Sistema -->
+        <div class="card mb-4">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-cog me-2"></i>Informações do Sistema
+                </h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Cadastrado em:</strong> {{ cliente.data_cadastro|date:"d/m/Y H:i" }}</p>
+                <p><strong>Última atualização:</strong> {{ cliente.data_atualizacao|date:"d/m/Y H:i" }}</p>
+                <p><strong>Cadastrado por:</strong> {{ cliente.usuario_cadastro.get_full_name|default:cliente.usuario_cadastro.username }}</p>
+            </div>
+        </div>
+
+        {% if cliente.observacoes %}
+        <!-- Observações -->
+        <div class="card mb-4">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-sticky-note me-2"></i>Observações
+                </h5>
+            </div>
+            <div class="card-body">
+                <p>{{ cliente.observacoes|linebreaks }}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="d-flex justify-content-end gap-2">
+    <a href="{% url 'cadastros:cliente_list' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Voltar
+    </a>
+    <a href="{% url 'cadastros:cliente_update' cliente.pk %}" class="btn btn-primary">
+        <i class="fas fa-edit me-2"></i>Editar
+    </a>
+    <a href="{% url 'cadastros:cliente_delete' cliente.pk %}" class="btn btn-danger">
+        <i class="fas fa-trash me-2"></i>Excluir
+    </a>
+</div>
+{% endblock %}
